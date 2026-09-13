@@ -1,0 +1,14 @@
+[
+  { "id": "01", "beat": "hook", "text": "Every event at Sturbridge Host Hotel ends the same way. Someone rebuilds an invoice by hand. Room rental, A V, lunches. And then the part that goes wrong: meals tax on some lines, service charge and house charge on others, and sales tax on top of those." },
+  { "id": "02", "beat": "dashboard", "text": "This is the invoicing tool built for exactly that. One sign-in for sales and the front desk, and the dashboard tells you what's owed today. Four thousand seven hundred forty dollars outstanding. All of it overdue." },
+  { "id": "03", "beat": "old-invoice", "text": "Here's an invoice you'll recognise. Cornerstone Building Brands, two days in the Seminar Room. The layout is the one clients already get. The swan, the teal header, the payment stub. Nothing to re-train." },
+  { "id": "04", "beat": "tax-lines", "text": "The difference is what's underneath. Every line carries its own charges. The room and the wifi are exempt. The lunches pick up meals tax, service charge, house charge, and the six and a quarter percent on those charges. The math is done once, correctly, and it stays done." },
+  { "id": "05", "beat": "new-customer", "text": "So let's build a new one. Old Sturbridge Rotary Club. Type three letters and the customer fills itself in." },
+  { "id": "06", "beat": "add-lunch", "text": "Lunch per person, straight from the price list. Forty guests." },
+  { "id": "07", "beat": "add-boardroom", "text": "Add the boardroom, and watch the summary. Thirteen forty subtotal. Meals tax, seventy two eighty. Service charge, one forty five sixty. House charge, eighty three twenty. Sales tax on those two, fourteen thirty. Sixteen fifty five ninety. And the boardroom stayed out of every tax line, on its own." },
+  { "id": "08", "beat": "save", "text": "Save, and it's numbered in sequence. I N V, S H H, one thousand and three." },
+  { "id": "09", "beat": "print", "text": "Print, or save as P D F, and it's the same document the hotel sends today. Stub and all." },
+  { "id": "10", "beat": "payment", "text": "When the check arrives, record it. Five hundred on account, and the invoice flips to partially paid, with eleven fifty five ninety still due." },
+  { "id": "11", "beat": "dashboard-again", "text": "Back on the dashboard, nothing is hidden. Outstanding, overdue, collected this month, drafts still waiting." },
+  { "id": "12", "beat": "close", "text": "It's a prototype. The data lives in this browser, and the numbers you saw are the sample set. But the tax engine, the document, and the workflow are real. Sturbridge Host Hotel invoicing. Ready to hand to the front desk on Monday." }
+]
