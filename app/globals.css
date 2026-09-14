@@ -34,3 +34,5 @@ html, body { background: #f7f8f9; color: #2f3237; }
   .doc-fit { height: auto !important; }
   .doc-fit-inner { transform: none !important; width: 100% !important; }
 }
+.doc-a4 { width: 210mm; min-height: 297mm; }
+@media print { .doc-a4 { width: 100%; } }

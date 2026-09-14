@@ -1,25 +1,38 @@
 # Sturbridge Host Hotel — Invoicing
 
-Event, banquet and conference invoicing for [Sturbridge Host Hotel + Conference Center](https://www.sturbridgehosthotel.com/). Built with Next.js 15, React 19 and Tailwind.
+Event, banquet and conference invoicing for [Sturbridge Host Hotel + Conference Center](https://www.sturbridgehosthotel.com/), built as a configurable product rather than a one-off. Next.js 15, React 19, Tailwind.
 
-## What it does
-- **Invoices** with the hotel's real tax model: 7% meals tax, 14% service charge, 8% house charge, and 6.25% MA sales tax on the charges — applied per line, so rooms/AV stay exempt while F&B is taxed.
-- **Print-perfect documents** matching the hotel's existing invoice layout (teal header, Bill To/meta block, item table, totals, payment stub). Print → Save as PDF from any browser.
-- **Payments** (partial or full), automatic Draft / Sent / Partially paid / Paid / Overdue / Void status.
-- **Customers** and a **price list** (Items & Pricing) with typeahead on the invoice editor.
-- **Dashboard**: outstanding, overdue, collected this month, upcoming events.
-- **Settings**: hotel details, tax rates, numbering, defaults, backup export/restore.
-- **Staff passcode** gate (env `INVOICE_PASSCODE`, default `host2026`).
+## What makes it sellable
+
+**Plug-and-play tax & charge engine** (`lib/engine.ts`). Every tax, service charge, fee and gratuity is a *rule*: percent or flat, applied to *tax classes* of line items and/or compounded on other rules. Jurisdiction presets ship for Massachusetts hotel banquet (matches the hotel's current invoices to the cent), Massachusetts with segregated gratuity, generic US sales tax, Ontario HST and UK VAT. Rules have effective dates for rate changes, per-line overrides, tax-exempt customers, pass-through flags for gratuity, and a live "Try it" playground. `lib/engine.test.mjs` reproduces the hotel's two real invoices.
+
+**Document templates.** Classic (the hotel's current layout, with payment stub), Modern and Compact, each with accent color, logo, optional columns, grouped taxes, terms text, signature line, footer and paper size. Any document can print with any template.
+
+**Estimates → invoices.** Separate numbering, accept/decline/expire, one-click convert, "copy as estimate".
+
+**Deposits & payment schedules.** Templates (e.g. 25% at signing, 50% thirty days before the event, balance fourteen days before) expand into editable milestones, print on the document, and allocate payments FIFO.
+
+**Custom fields**, configurable built-in fields, categories, units, terms, payment methods, sales people, numbering patterns (`INV-{YYYY}-{SEQ:4}`, yearly reset), locale/currency/date format.
+
+**Reminders & late fees.** Due-soon and overdue tracking, reminder/receipt email templates with merge tokens, suggested late fee per policy (always confirmed, never silent).
+
+**Reports.** A/R aging, tax liability by rule by month (for the meals-tax and room-occupancy returns), sales by tax class and sales person, customers; all CSV.
+
+**Operations.** Activity log per document, CSV import/export for items and customers, JSON backup/restore, admin vs staff passcodes.
 
 ## Run locally
 ```bash
 npm install
-npm run dev
+npm run dev        # http://localhost:5190
+npx tsx lib/engine.test.mjs   # engine regression test
 ```
-Open http://localhost:5190.
+Passcodes: `INVOICE_PASSCODE` (admin, default `host2026`) and optional `STAFF_PASSCODE`.
 
 ## Deploy
-Import the repo on Vercel; no other configuration is needed. Set `INVOICE_PASSCODE` under Environment Variables to change the sign-in code.
+Import the repo on Vercel; no build settings needed. Set the passcode env vars.
 
 ## Data
-The prototype persists to the browser's localStorage (see `lib/store.tsx`). All reads/writes go through one store, so moving to Postgres (Vercel Postgres / Neon + Prisma) is a swap of `load`/`persist` plus API routes — the UI does not change. Use Settings → Export backup to carry data over.
+The prototype persists to the browser's localStorage through one store (`lib/store.tsx`) with versioned migrations (`lib/migrate.ts`). Moving to Postgres is a swap of `load`/`persist` plus API routes; the UI does not change. Use Settings → Team & data → Export backup to carry data over.
+
+## Demo video
+`demo/` holds the narration script, recorder and mux for the narrated walkthrough (see `demo/scripts`).

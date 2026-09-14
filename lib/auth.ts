@@ -1,12 +1,22 @@
 export const authCookieName = "shh_session";
+export type Role = "admin" | "staff";
 
-export function passcode(): string {
-  return process.env.INVOICE_PASSCODE || "host2026";
+export function passcodes(): { admin: string; staff: string } {
+  return { admin: process.env.INVOICE_PASSCODE || "host2026", staff: process.env.STAFF_PASSCODE || "" };
 }
 
-/** Cookie holds a SHA-256 of the passcode + a static salt, so the passcode itself never leaves the server. Edge-runtime safe. */
-export async function expectedCookieValue(): Promise<string> {
-  const data = new TextEncoder().encode(`shh-invoicing::${passcode()}`);
-  const hash = await crypto.subtle.digest("SHA-256", data);
+async function sha(text: string): Promise<string> {
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+/** Cookie value: "<role>.<sha256(role + passcode)>" — the passcode never leaves the server. */
+export async function cookieFor(role: Role): Promise<string> {
+  const pc = passcodes();
+  return `${role}.${await sha(`shh-invoicing::${role}::${role === "admin" ? pc.admin : pc.staff}`)}`;
+}
+export async function roleFromCookie(value: string | undefined): Promise<Role | null> {
+  if (!value) return null;
+  if (value === (await cookieFor("admin"))) return "admin";
+  if (passcodes().staff && value === (await cookieFor("staff"))) return "staff";
+  return null;
 }
