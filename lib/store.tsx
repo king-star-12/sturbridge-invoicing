@@ -3,8 +3,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import type { CatalogItem, Customer, Database, DocKind, Invoice, Settings } from "./types";
 import { buildSeedDatabase } from "./seed";
 import { migrate } from "./migrate";
-import { takeNumber } from "./calc";
-import { configureFormat } from "./format";
+import { dueDateFor, takeNumber } from "./calc";
+import { configureFormat, todayISO } from "./format";
 import { uid } from "./id";
 
 /**
@@ -104,7 +104,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       convertEstimate: (id) => {
         const src = dbRef.current.invoices.find((i) => i.id === id); if (!src || src.kind !== "estimate") return undefined;
         const { id: _i, number: _n, createdAt: _c, updatedAt: _u, ...rest } = src;
-        const inv = issue({ ...rest, kind: "invoice", status: "draft", payments: [], sentAt: undefined, convertedFromId: src.id, convertedToId: undefined, activity: [act(`Converted from estimate ${src.number}`)], items: src.items.map((li) => ({ ...li, id: uid("li") })) });
+        const d = dbRef.current.settings;
+        const today = todayISO();
+        const terms = dbRef.current.customers.find((c) => c.id === src.customerId)?.defaultTerms || d.defaults.terms;
+        const inv = issue({ ...rest, kind: "invoice", status: "draft", payments: [], sentAt: undefined, convertedFromId: src.id, convertedToId: undefined, invoiceDate: today, terms, dueDate: dueDateFor(today, terms), activity: [act(`Converted from estimate ${src.number}`)], items: src.items.map((li) => ({ ...li, id: uid("li") })) });
         commit((cur) => ({ ...cur, invoices: cur.invoices.map((i) => i.id === src.id ? { ...i, status: "converted", convertedToId: inv.id, updatedAt: now(), activity: [...i.activity, act(`Converted to ${inv.number}`)] } : i) }));
         return inv;
       },

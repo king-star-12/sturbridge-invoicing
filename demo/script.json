@@ -1,14 +1,77 @@
 [
-  { "id": "01", "beat": "hook", "text": "Every event at Sturbridge Host Hotel ends the same way. Someone rebuilds an invoice by hand. Room rental, A V, lunches. And then the part that goes wrong: meals tax on some lines, service charge and house charge on others, and sales tax on top of those." },
-  { "id": "02", "beat": "dashboard", "text": "This is the invoicing tool built for exactly that. One sign-in for sales and the front desk, and the dashboard tells you what's owed today. Four thousand seven hundred forty dollars outstanding. All of it overdue." },
-  { "id": "03", "beat": "old-invoice", "text": "Here's an invoice you'll recognise. Cornerstone Building Brands, two days in the Seminar Room. The layout is the one clients already get. The swan, the teal header, the payment stub. Nothing to re-train." },
-  { "id": "04", "beat": "tax-lines", "text": "The difference is what's underneath. Every line carries its own charges. The room and the wifi are exempt. The lunches pick up meals tax, service charge, house charge, and the six and a quarter percent on those charges. The math is done once, correctly, and it stays done." },
-  { "id": "05", "beat": "new-customer", "text": "So let's build a new one. Old Sturbridge Rotary Club. Type three letters and the customer fills itself in." },
-  { "id": "06", "beat": "add-lunch", "text": "Lunch per person, straight from the price list. Forty guests." },
-  { "id": "07", "beat": "add-boardroom", "text": "Add the boardroom, and watch the summary. Thirteen forty subtotal. Meals tax, seventy two eighty. Service charge, one forty five sixty. House charge, eighty three twenty. Sales tax on those two, fourteen thirty. Sixteen fifty five ninety. And the boardroom stayed out of every tax line, on its own." },
-  { "id": "08", "beat": "save", "text": "Save, and it's numbered in sequence. I N V, S H H, one thousand and three." },
-  { "id": "09", "beat": "print", "text": "Print, or save as P D F, and it's the same document the hotel sends today. Stub and all." },
-  { "id": "10", "beat": "payment", "text": "When the check arrives, record it. Five hundred on account, and the invoice flips to partially paid, with eleven fifty five ninety still due." },
-  { "id": "11", "beat": "dashboard-again", "text": "Back on the dashboard, nothing is hidden. Outstanding, overdue, collected this month, drafts still waiting." },
-  { "id": "12", "beat": "close", "text": "It's a prototype. The data lives in this browser, and the numbers you saw are the sample set. But the tax engine, the document, and the workflow are real. Sturbridge Host Hotel invoicing. Ready to hand to the front desk on Monday." }
+  {
+    "id": "01",
+    "beat": "hook",
+    "text": "Every banquet, conference and wedding ends with an invoice, and every one hides the same problem. Some lines carry meals tax. Some carry a service charge and a house charge. Then there's sales tax on the charges themselves. Get one wrong and the accountant finds it months later."
+  },
+  {
+    "id": "02",
+    "beat": "dashboard",
+    "text": "This is invoicing built for hotels and venues. Sign in, and the dashboard says what's owed today: four thousand seven hundred forty dollars outstanding, all of it overdue, and an estimate pipeline that's about to fill up."
+  },
+  {
+    "id": "03",
+    "beat": "tax-console",
+    "text": "Start with the part that sells it. Taxes aren't hard-coded. They're rules. Pick a jurisdiction preset, Massachusetts hotel banquet here, and you get meals tax, service charge, house charge, sales tax compounded on those charges, and room occupancy excise on sleeping rooms. Switch the preset and the whole stack changes."
+  },
+  {
+    "id": "04",
+    "beat": "rules",
+    "text": "Each rule says what it applies to: tax classes like food and beverage, alcohol, guest rooms. Or other rules, so sales tax on a service charge is one line, not a spreadsheet. Effective dates handle rate changes."
+  },
+  {
+    "id": "05",
+    "beat": "playground",
+    "text": "And you can prove it before it touches an invoice. One hundred dollars of food becomes one thirty, thirty eight. Switch the class to guest rooms and it's the occupancy excise instead: one eleven, seventy."
+  },
+  {
+    "id": "06",
+    "beat": "items",
+    "text": "The price list carries the same classes. Lunch is food and beverage, wine is alcohol, the ballroom is room rental. The item knows how it's taxed, so the person building the invoice doesn't have to."
+  },
+  {
+    "id": "07",
+    "beat": "estimate",
+    "text": "Now a real deal. A new estimate for the Rotary Club. Three letters and the customer fills in, and notice the tax-exempt flag comes with it. They're a non-profit."
+  },
+  {
+    "id": "08",
+    "beat": "lines",
+    "text": "A plated dinner for a hundred. Twenty bottles of house wine. The Grand Ballroom. Guaranteed count and function room are custom fields the property added itself."
+  },
+  {
+    "id": "09",
+    "beat": "summary",
+    "text": "Watch the summary. Subtotal seven thousand nine hundred eighty. Service charge and house charge apply to the dinner and the wine. Meals tax and the sales tax on charges are gone, because the customer is exempt, and the ballroom never carried any of it. Nine thousand, one eighty five, sixty."
+  },
+  {
+    "id": "10",
+    "beat": "accept-convert",
+    "text": "Send the estimate. When the club says yes, mark it accepted and convert. It becomes an invoice with its own number, linked back to the estimate."
+  },
+  {
+    "id": "11",
+    "beat": "schedule",
+    "text": "Events aren't paid in one go, so pick a deposit schedule. Twenty five percent to hold the date, fifty percent later, the balance before the event. Every milestone stays editable, and it prints on the invoice."
+  },
+  {
+    "id": "12",
+    "beat": "payment",
+    "text": "The deposit check arrives. Record payment already suggests the first milestone, twenty two ninety six, forty. The balance drops to six thousand eight eighty nine, twenty, and the milestone is marked received."
+  },
+  {
+    "id": "13",
+    "beat": "templates",
+    "text": "Printing is templated too. This is the same invoice in the modern layout. Different color, tax codes on every line, a signature block. The classic layout matches what the hotel sends today, stub page and all."
+  },
+  {
+    "id": "14",
+    "beat": "reports",
+    "text": "And the accountant gets reports instead of questions. Tax liability by rule, by month, with the base it was computed on. Receivables aging by customer. Everything exports to C S V."
+  },
+  {
+    "id": "15",
+    "beat": "close",
+    "text": "It's a prototype: the data lives in this browser and the numbers are a sample set. But the engine, the documents and the workflow are real, and every rate, label, field and template is the property's to change. Venue invoicing that's ready to sell."
+  }
 ]

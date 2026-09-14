@@ -228,13 +228,18 @@ async function beat(id, label, action) {
 
 try {
   // ================================================================
-  const finder = {
-    docTotals: `() => [...document.querySelectorAll('.doc td')].find(td => td.textContent.trim() === 'Balance Due')?.closest('table')`,
-    docItems: `() => document.querySelector('.doc thead')?.closest('table')`,
-    summary: `() => document.querySelector('main aside')`,
+  const F = {
     stats: `() => document.querySelector('.grid.grid-cols-2')`,
+    docTotals: `() => [...document.querySelectorAll('.doc td')].find(td => td.textContent.trim() === 'Balance Due')?.closest('table')`,
+    summary: `() => document.querySelector('main aside')`,
     balanceCard: `() => document.querySelector('main aside section')`,
     lineTable: `() => document.querySelector('table.table')`,
+    firstCard: `() => document.querySelector('main section.card')`,
+    rulesCard: `() => [...document.querySelectorAll('main section.card')].find(s => s.textContent.includes('Charge rules'))`,
+    playground: `() => [...document.querySelectorAll('main section.card')].find(s => s.textContent.includes('Try it'))`,
+    scheduleCard: `() => [...document.querySelectorAll('main section.card')].find(s => s.textContent.includes('Deposits & payment schedule'))`,
+    reportCard: `() => document.querySelector('main section.card')`,
+    h1: `() => document.querySelector('h1')`,
   };
   const scrollToEl = async (src, off = 90, ms = 1200) => {
     await page.evaluate((s, o, d) => { const el = new Function('return (' + s + ')()')(); if (!el) return; const top = el.getBoundingClientRect().top + scrollY - o; return window.__scrollTo(Math.max(0, top), d); }, src, off, ms);
@@ -245,111 +250,111 @@ try {
     await page.evaluate((pt, ms) => window.__cursor.glide(pt.x, pt.y, ms), p, glide);
     await wait(glide + 80); await page.mouse.click(p.x, p.y); await page.evaluate(() => window.__cursor.ripple()); await wait(120);
   };
+  const setSelect = async (optionValueOrText, value) => page.evaluate((needle, v) => {
+    const sel = [...document.querySelectorAll('select')].find(s => [...s.options].some(o => o.value === needle || o.textContent.trim() === needle));
+    const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
+    setter.call(sel, v ?? needle); sel.dispatchEvent(new Event('change', { bubbles: true }));
+  }, optionValueOrText, value);
+  const setInput = async (sel, v) => page.evaluate((s, val) => {
+    const el = document.querySelector(s); const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    setter.call(el, val); el.dispatchEvent(new Event('input', { bubbles: true }));
+  }, sel, v);
+  const typeSel = async (sel, text, delay = 120) => { await clickSel(sel); await page.evaluate((s) => document.querySelector(s).select(), sel); await page.keyboard.type(text, { delay }); };
   const go = async (url) => { await page.goto(BASE + url, { waitUntil: "networkidle0" }); await wait(300); await dress(page); };
+  const expectText = async (t, ms = 8000) => page.waitForFunction((x) => document.body.innerText.includes(x), { timeout: ms }, t);
 
-  await beat("01", "hook — dashboard", async () => {
-    await dress(page);
-    await wait(2500);
-    await focusOn(page, finder.stats, 4200, 20);
+  await beat("01", "hook — dashboard", async () => { await dress(page); await wait(3000); await focusOn(page, F.stats, 5000, 20); });
+
+  await beat("02", "dashboard numbers", async () => { await wait(500); await focusOn(page, `() => document.querySelector('.grid.grid-cols-2 > div')`, 4200, 20); await focusOn(page, `() => document.querySelectorAll('.grid.grid-cols-2 > div')[4]`, 3200, 20); });
+
+  await beat("03", "tax console", async () => {
+    await go("/settings"); await wait(600);
+    await focusOn(page, F.firstCard, 5500, 18);
+    await clickSel('main section.card select'); await wait(900); await page.keyboard.press("Escape"); await wait(400);
+    await scrollToEl(F.rulesCard, 120, 1200);
   });
 
-  await beat("02", "dashboard numbers", async () => {
-    await wait(600);
-    await focusOn(page, `() => document.querySelector('.grid.grid-cols-2 > div')`, 5200, 20);
+  await beat("04", "rules", async () => {
+    await focusOn(page, F.rulesCard, 6000, 14);
+    await clickAt(page, "Edit"); await page.waitForSelector('[role=dialog]', { timeout: 5000 }); await wait(4500);
+    await page.keyboard.press("Escape"); await wait(400);
   });
 
-  await beat("03", "open the Cornerstone invoice", async () => {
-    await clickAt(page, "INV-SHH1001");
-    await page.waitForSelector(".doc", { timeout: 15000 });
-    await wait(400); await dress(page);
-    await wait(2200);
-    await scrollToEl(finder.docItems, 140, 1400);
+  await beat("05", "playground", async () => {
+    await scrollToEl(F.playground, 160, 1100);
+    await focusOn(page, F.playground, 4500, 16);
+    await setSelect("guest_rooms"); await wait(300);
+    await focusOn(page, F.playground, 4500, 16);
   });
 
-  await beat("04", "tax lines", async () => {
-    await scrollToEl(finder.docTotals, 260, 1400);
-    await focusOn(page, finder.docTotals, 9000, 22);
+  await beat("06", "items", async () => { await go("/items"); await wait(800); await page.evaluate(() => window.__scrollTo(420, 1800)); await wait(2000); await focusOn(page, `() => [...document.querySelectorAll('main section.card')].find(s => s.textContent.includes('Food & Beverage'))`, 5000, 14); });
+
+  await beat("07", "new estimate, customer", async () => {
+    await go("/invoices/new?kind=estimate"); await wait(500);
+    await clickSel('input[placeholder*="Search customers"]'); await page.keyboard.type("Rot", { delay: 160 }); await wait(500);
+    await clickAt(page, "Old Sturbridge Rotary Club"); await wait(400);
+    await focusOn(page, `() => [...document.querySelectorAll('label')].find(l => l.textContent.includes('Tax-exempt customer'))`, 3200, 14);
   });
 
-  await beat("05", "new invoice, pick customer", async () => {
-    await go("/invoices/new");
-    await wait(300);
-    await clickSel('input[placeholder*="Search customers"]');
-    await page.keyboard.type("Rot", { delay: 140 });
-    await wait(500);
-    await clickAt(page, "Old Sturbridge Rotary Club");
-    await wait(300);
+  await beat("08", "lines + custom fields", async () => {
+    await scrollToEl(F.lineTable, 330, 1000);
+    await clickSel('input[placeholder="Item name"]'); await page.keyboard.type("Plated", { delay: 90 }); await wait(500); await page.keyboard.press("Enter"); await wait(250);
+    await typeSel('table.table tbody tr:nth-child(1) input[type=number]', "100", 120); await page.keyboard.press("Tab");
+    await setSelect("cat_wine"); await wait(300);
+    await typeSel('table.table tbody tr:nth-child(2) input[type=number]', "20", 120); await page.keyboard.press("Tab");
+    await setSelect("cat_ballroom"); await wait(300);
+    await page.evaluate(() => window.__scrollTo(scrollY - 520, 900)); await wait(1000);
+    const cf = await page.evaluate(() => { const l = [...document.querySelectorAll('label')].find(x => x.textContent.includes('Guaranteed guest count')); return l ? l.nextElementSibling !== null : false; });
+    if (cf) { await setInput('input[type=number]:not(table input)', "100"); }
+    await setSelect("Grand Ballroom"); await wait(400);
   });
 
-  await beat("06", "lunch x40", async () => {
-    await scrollToEl(finder.lineTable, 320, 1100);
-    await clickSel('input[placeholder="Item name"]');
-    await page.keyboard.type("lunch", { delay: 90 });
-    await wait(600);
-    await page.keyboard.press("Enter");
-    await wait(300);
-    await clickSel('table.table input[type=number]');
-    await page.evaluate(() => document.querySelector('table.table input[type=number]').select());
-    await page.keyboard.type("40", { delay: 160 });
-    await page.keyboard.press("Tab");
+  await beat("09", "summary", async () => {
+    const txt = await page.evaluate(() => document.querySelector('main aside').innerText);
+    if (!txt.includes("9,185.60")) throw new Error("summary mismatch: " + txt.replace(/\n+/g, " / "));
+    await focusOn(page, F.summary, 14000, 18);
   });
 
-  await beat("07", "boardroom + summary", async () => {
-    await page.evaluate(() => {
-      const sel = [...document.querySelectorAll('select')].find(s => [...s.options].some(o => o.value === 'cat_boardroom'));
-      const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
-      setter.call(sel, 'cat_boardroom'); sel.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    await wait(700);
-    const total = await page.evaluate(() => document.querySelector('main aside').innerText);
-    if (!total.includes("1,655.90")) throw new Error("summary mismatch: " + total.replace(/\n+/g, " / "));
-    await focusOn(page, finder.summary, 14000, 18);
-  });
-
-  await beat("08", "save", async () => {
+  await beat("10", "send, accept, convert", async () => {
     await clickAt(page, "Save & mark as sent");
-    await page.waitForFunction(() => location.pathname.startsWith("/invoices/inv_"), { timeout: 15000 });
-    await page.waitForSelector(".doc", { timeout: 15000 });
-    await wait(300); await dress(page);
-    await focusOn(page, `() => document.querySelector('h1')`, 2600, 16);
+    await page.waitForFunction(() => location.pathname.startsWith("/invoices/inv_"), { timeout: 15000 }); await page.waitForSelector(".doc", { timeout: 15000 }); await wait(300); await dress(page);
+    await clickAt(page, "Mark accepted"); await expectText("Convert to invoice"); await wait(600);
+    await clickAt(page, "Convert to invoice");
+    await page.waitForFunction(() => location.pathname.endsWith("/edit"), { timeout: 15000 }); await wait(400); await dress(page);
+    await focusOn(page, F.h1, 2000, 14);
   });
 
-  await beat("09", "print view", async () => {
+  await beat("11", "deposit schedule", async () => {
+    await scrollToEl(F.scheduleCard, 120, 1100);
+    await setSelect("dep_standard"); await wait(400);
+    await expectText("Deposit to hold the date");
+    await focusOn(page, F.scheduleCard, 7500, 14);
+    await clickAt(page, "Save & mark as sent");
+    await page.waitForFunction(() => /\/invoices\/inv_[^/]+$/.test(location.pathname), { timeout: 15000 }); await page.waitForSelector(".doc", { timeout: 15000 }); await wait(300); await dress(page);
+  });
+
+  await beat("12", "payment", async () => {
+    await clickAt(page, "Record payment"); await page.waitForSelector('[role=dialog] input[type=number]', { timeout: 5000 }); await wait(1200);
+    await clickSel('[role=dialog] input[placeholder^="Check"]'); await page.keyboard.type("#2210", { delay: 90 }); await wait(300);
+    await clickAt(page, "Save payment"); await expectText("Partially paid"); await wait(400);
+    await focusOn(page, F.balanceCard, 3000, 16);
+    await focusOn(page, `() => [...document.querySelectorAll('main aside section')].find(s => s.textContent.includes('Payment schedule'))`, 3200, 16);
+  });
+
+  await beat("13", "templates", async () => {
     const id = await page.evaluate(() => location.pathname.split("/")[2]);
-    await go("/print/" + id);
-    await wait(1200);
-    await page.evaluate(() => window.__scrollTo(document.body.scrollHeight - innerHeight, 3200));
-    await wait(3400);
-    await page.evaluate(() => window.__scrollTo(0, 1200));
-    await go("/invoices/" + id);
+    await go("/print/" + id + "?template=tpl_modern"); await wait(1500);
+    await page.evaluate(() => window.__scrollTo(document.body.scrollHeight - innerHeight, 3600)); await wait(3800);
+    await setSelect("tpl_classic"); await wait(300); await page.evaluate(() => window.__scrollTo(0, 1400)); await wait(1600);
   });
 
-  await beat("10", "record payment", async () => {
-    await clickAt(page, "Record payment");
-    await page.waitForSelector('[role=dialog] input[type=number]', { timeout: 5000 });
-    await wait(300);
-    await clickSel('[role=dialog] input[type=number]');
-    await page.evaluate(() => document.querySelector('[role=dialog] input[type=number]').select());
-    await page.keyboard.type("500", { delay: 150 });
-    await clickSel('[role=dialog] input[placeholder^="Check"]');
-    await page.keyboard.type("#1042", { delay: 90 });
-    await wait(300);
-    await clickAt(page, "Save payment");
-    await page.waitForFunction(() => document.body.innerText.includes("Partially paid"), { timeout: 5000 });
-    await wait(400);
-    await focusOn(page, finder.balanceCard, 4500, 18);
+  await beat("14", "reports", async () => {
+    await go("/reports"); await wait(500);
+    await clickAt(page, "Tax liability"); await wait(500); await focusOn(page, F.reportCard, 4200, 14);
+    await clickAt(page, "A/R aging"); await wait(500); await focusOn(page, F.reportCard, 3800, 14);
   });
 
-  await beat("11", "dashboard again", async () => {
-    await go("/");
-    await wait(500);
-    await focusOn(page, finder.stats, 4200, 20);
-  });
-
-  await beat("12", "close", async () => {
-    await wait(1500);
-    await page.evaluate(() => window.__scrollTo(0, 800));
-  });
+  await beat("15", "close", async () => { await go("/"); await wait(800); await focusOn(page, F.stats, 4000, 20); });
 
   // ================================================================
 } finally {
